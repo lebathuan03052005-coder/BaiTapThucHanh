@@ -4,27 +4,37 @@ import { Link, useNavigate } from "react-router-dom";
 import "./login_admin.css"; // Dùng file CSS riêng
 
 const LoginAdmin = () => {
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleAdminLogin = (e) => {
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
 
-    // XỬ LÝ LOGIC ĐĂNG NHẬP ADMIN TẠI ĐÂY
-    // Giả lập check quyền Admin tối cao
-    if (
-      adminEmail === "thuansu@theking.com" &&
-      adminPassword === "supersecret"
-    ) {
-      //  Mẹo: Lưu trạng thái đăng nhập vào LocalStorage
-      localStorage.setItem("isAdminLoggedIn", "true");
-      localStorage.setItem("adminName", "Sếp Thuần");
+    try {
+      const response = await fetch("http://localhost:3000/admin-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
 
-      console.log("Chào sếp Thuần đã trở lại!");
-      navigate("/admin"); // Đẩy vào Dashboard quản trị
-    } else {
-      alert(" Tài khoản hoặc mật khẩu Admin không chính xác!");
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem("isAdminLoggedIn", "true");
+        localStorage.setItem("adminName", data.admin.fullname);
+        navigate("/admin");
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Không kết nối được server");
     }
   };
 
@@ -44,8 +54,8 @@ const LoginAdmin = () => {
               id="admin-email"
               type="email"
               placeholder="Nhập email quản trị..."
-              value={adminEmail}
-              onChange={(e) => setAdminEmail(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
@@ -56,8 +66,8 @@ const LoginAdmin = () => {
               id="admin-password"
               type="password"
               placeholder="Nhập mật khẩu..."
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
